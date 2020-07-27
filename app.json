@@ -1,0 +1,13 @@
+{
+  "name": "suraj-app",
+  "displayName": "suraj-app",
+  "expo": {
+    "name": "suraj-app",
+    "slug": "suraj-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "description": ""
+  }
+}
