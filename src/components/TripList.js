@@ -1,25 +1,45 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, FlatList, Text, View, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { createFilter } from 'react-native-search-filter';
-import jsonData from "../../mockData/nameList.json";
-import CardView from "../../components/CardView";
-
-
-const KEYS_TO_FILTERS = ['cust_name', 'mobile',];
+import jsonData from "../mockData/nameList.json";
+import CardView from "../components/CardView";
+import { KEYS_TO_FILTERS } from "../common/constants";
 
 export default class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            searchTerm: ''
+            searchTerm: '',
+            filteredData: [],
+            loader: false
         }
     }
+
+    componentDidMount() {
+        this.setState({ loader: true });
+        this.setState({
+            filteredData: jsonData
+                .filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS))
+                .sort(this.compare)
+        }, () => {
+            this.setState({ loader: false });
+        });
+    }
+
     handleString(str) {
         return str.toString().substr(0, 1);
     }
+
     searchUpdated(term) {
-        this.setState({ searchTerm: term })
+        const filteredData = jsonData
+            .filter(createFilter(term, KEYS_TO_FILTERS))
+            .sort(this.compare);
+        this.setState({
+            searchTerm: term,
+            filteredData: filteredData
+        });
     }
+
     compare = (a, b) => {
         if (a.cust_name < b.cust_name) {
             return -1;
@@ -29,19 +49,32 @@ export default class App extends Component {
         }
         return 0;
     }
+
+    pressHandler(item) {
+        this.props.navigation.navigate('displaydetails', item);
+    }
+
     render() {
-        const filteredData = jsonData.filter(createFilter(this.state.searchTerm, KEYS_TO_FILTERS)).sort(this.compare);
-        return (
-            <View style={styles.container}>
-                <TextInput
-                    style={styles.searchBox}
-                    placeholder={'Search'}
-                    onChangeText={(term) => { this.searchUpdated(term) }}
-                />
-                <ScrollView>
-                    {filteredData.map(item => {
-                        return (
-                            <TouchableOpacity style={styles.separator} key={item.id} onPress={() => pressHandler(item.id)}>
+        if (this.state.loader) {
+            return <ActivityIndicator size={30} style={styles.loading} />
+        } else {
+            return (
+                <View style={styles.viewContainer}>
+                    <TextInput
+                        style={styles.searchBox}
+                        placeholder={'Search'}
+                        onChangeText={(term) => { this.searchUpdated(term) }}
+                    />
+                    <FlatList
+                        data={this.state.filteredData}
+                        keyExtractor={(item) => item.id.toString()}
+                        initialNumToRender={10}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.separator}
+                                key={item.id}
+                                onPress={() => this.pressHandler(item)}
+                            >
                                 <CardView style={styles.viewContainer}>
                                     <View style={styles.rowFlexContainer}>
                                         <Text style={styles.initialLetter}></Text>
@@ -78,15 +111,24 @@ export default class App extends Component {
                                     </View>
                                 </CardView>
                             </TouchableOpacity>
-                        )
-                    })}
-                </ScrollView>
-            </View>
-        );
+                        )}
+                    />
+                </View>
+            );
+        }
     }
 }
 const styles = StyleSheet.create(
     {
+        loading: {
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            alignItems: 'center',
+            justifyContent: 'center'
+        },
         initialTextLetter: {
             flex: 1,
             position: 'absolute',
@@ -134,7 +176,6 @@ const styles = StyleSheet.create(
         rowFlexContainer: {
             flexDirection: 'row'
         },
-        /****************/
 
         viewContainer: {
             flex: 1,

@@ -1,17 +1,8 @@
-import React, { useEffect } from 'react';
-import { TextInput, Button, View, StyleSheet, Platform } from 'react-native';
+import React from 'react';
+import { TextInput, Button, View, StyleSheet } from 'react-native';
 import { Formik } from 'formik';
-import { globalStyles } from "../../assets/styles/global";
-import DatePickerComponent from "../../components/DatePicker";
-import axios from "axios";
-import * as yup from "yup";
 
-const ReviewSchema = yup.object({
-    car: yup.string().required(),
-    mobile: yup.number().required()
-});
-
-const ReviewForm = () => {
+const ReviewForm = ({ navigation }) => {
 
     const fieldsObj = {
         car: '',
@@ -33,12 +24,13 @@ const ReviewForm = () => {
         console.log('inside submit', values);
     };
 
-    useEffect(() => {
-    }, []);
-
     const validate = (values) => {
         console.log('inside validate');
-        return false;
+        // return false;
+    };
+
+    const pressHandler = () => {
+        navigation.goBack();
     };
 
     return (
@@ -148,6 +140,11 @@ const ReviewForm = () => {
                             title="Submit"
                             color="coral"
                             onPress={handleSubmit}
+                        />
+                        <Button
+                            style={styles.buttons}
+                            title="Back"
+                            onPress={pressHandler}
                         />
                     </View>
                 </>
